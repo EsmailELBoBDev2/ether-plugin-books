@@ -333,8 +333,12 @@ export function resolveKindItem(
 
   // 3. Search configured Ether indexers (stay tight within the 5s /resolve deadline)
   let allCandidates: SourceCandidate[] = [];
+  // Later queries run until enough candidates the matcher accepts were found:
+  // a first query full of rejects (another series' volume of the same number)
+  // must not stop the search before the form the right release uses.
+  let acceptable = 0;
   for (let qi = 0; qi < queries.length; qi++) {
-    if (qi > 0 && (allCandidates.length >= 3 || elapsed() > 1100)) break;
+    if (qi > 0 && (acceptable >= 3 || elapsed() > 1100)) break;
     const found = safeResolveSources({
       kind: "indexer_search",
       query: queries[qi],
@@ -342,6 +346,7 @@ export function resolveKindItem(
     });
     if (found.length > 0) {
       allCandidates.push(...found);
+      acceptable += found.filter((c) => !scoreFor(item, c, settings).rejected).length;
     }
   }
   allCandidates = dedupeCandidates(allCandidates);

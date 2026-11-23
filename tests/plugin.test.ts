@@ -2110,6 +2110,39 @@ describe("Comics & Manga: series cards with volumes inside, strict volume matchi
     assert.ok(queries.every((q) => q.category === "7030"), JSON.stringify(queries));
   });
 
+  it("keeps searching when the first query finds only rejected releases", () => {
+    const asked: string[] = [];
+    installMockHost({
+      settings: { enable_manga: true, enable_mangaupdates: false, manga_titles: 20 },
+      httpHandler: (req) =>
+        req.url.includes("graphql.anilist.co")
+          ? { status: 200, body: JSON.stringify(anilistPage) }
+          : { status: 404, body: "" },
+      sourcesHandler: (q) => {
+        if (q.kind !== "indexer_search") return [];
+        asked.push(String(q.query));
+        // "v02" finds only the spin-off; the publisher release answers "Series 2".
+        if (String(q.query).endsWith("v02")) {
+          return [1, 2, 3].map((n) => ({
+            title: `Attack on Titan - Before the Fall v02 (2017) (Digital) (r${n}).cbz`,
+            infoHash: String(n).repeat(40),
+          }));
+        }
+        if (String(q.query).endsWith(" 2")) {
+          return [
+            { title: "Kodansha.-.Attack.On.Titan.02.2021.Hybrid.Comic.eBook-BitBook", infoHash: "c".repeat(40) },
+          ];
+        }
+        return [];
+      },
+    });
+    const vols = call("/ether/v1/kinds/comics/browse", { parentId: "al53390", limit: 50 }).body
+      .items as KindItem[];
+    call("/ether/v1/kinds/comics/resolve", { item: vols[1] });
+    assert.ok(asked.length >= 2, `only searched ${JSON.stringify(asked)}`);
+    assert.ok(asked.includes("Attack on Titan 2"), JSON.stringify(asked));
+  });
+
   it("drops a cached pick the current matcher rejects and searches again", () => {
     let searched = 0;
     installMockHost({
