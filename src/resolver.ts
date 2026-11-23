@@ -298,6 +298,13 @@ export function resolveKindItem(
     const alive: PlayableSource[] = [];
     for (const src of cached) {
       const rel = src.release;
+      // A pick made by an older matcher is checked again: a release the
+      // current rules reject (another series, another volume) is dropped.
+      const relTitle = rel?.candidate?.title;
+      if (relTitle && scoreFor(item, { ...rel.candidate, title: relTitle }, settings).rejected) {
+        droppedAny = true;
+        continue;
+      }
       if (rel?.nzbUrl && !rel.infoHash && !rel.magnet) {
         const probeCand: SourceCandidate = rel.candidate
           ? { ...rel.candidate, nzbUrl: rel.candidate.nzbUrl || rel.nzbUrl }

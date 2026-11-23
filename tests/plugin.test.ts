@@ -28,6 +28,7 @@ import {
 import { entryToKindItem, mergeEntries, reconcileStoredCatalog } from "../src/curated.ts";
 import { handle } from "../src/plugin.ts";
 import { comicsMatch, comicsScore } from "../src/comics.ts";
+import { storePreparedSources } from "../src/cache.ts";
 import type {
   EtherHttpRequest,
   EtherHttpResponse,
@@ -2104,6 +2105,53 @@ describe("Comics & Manga: series cards with volumes inside, strict volume matchi
     call("/ether/v1/kinds/comics/resolve", { item: vols[1] });
     assert.ok(queries.length > 0);
     assert.ok(queries.every((q) => q.category === "7030"), JSON.stringify(queries));
+  });
+
+  it("drops a cached pick the current matcher rejects and searches again", () => {
+    let searched = 0;
+    installMockHost({
+      settings: { enable_manga: true, enable_mangaupdates: false, manga_titles: 20 },
+      httpHandler: (req) =>
+        req.url.includes("graphql.anilist.co")
+          ? { status: 200, body: JSON.stringify(anilistPage) }
+          : { status: 404, body: "" },
+      sourcesHandler: (q) => {
+        if (q.kind === "indexer_search") {
+          searched++;
+          return [
+            { title: "Attack on Titan v02 (2012) (Digital) (danke-Empire).cbz", infoHash: "b".repeat(40), size: 2e8 },
+          ];
+        }
+        return [];
+      },
+    });
+    const vols = call("/ether/v1/kinds/comics/browse", { parentId: "al53390", limit: 50 }).body
+      .items as KindItem[];
+    // A pick an older matcher made and cached: the spin-off series.
+    storePreparedSources(
+      `src:volume:${vols[1].id}`,
+      [
+        {
+          id: "old",
+          label: "CBZ",
+          pattern: "release",
+          mime: "application/vnd.comicbook+zip",
+          release: {
+            infoHash: "a".repeat(40),
+            candidate: { title: "Attack on Titan - Before the Fall v02 (2017) (Digital).cbz", infoHash: "a".repeat(40) },
+          },
+        },
+      ],
+      1800,
+    );
+    const res = call("/ether/v1/kinds/comics/resolve", { item: vols[1] }).body as {
+      sources: Array<{ release?: { candidate?: { title?: string } } }>;
+    };
+    assert.ok(searched > 0, "the stale pick was reused instead of searching again");
+    assert.ok(
+      res.sources.every((x) => !/Before the Fall/.test(x.release?.candidate?.title || "")),
+      JSON.stringify(res.sources),
+    );
   });
 });
 
