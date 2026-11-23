@@ -1,0 +1,196 @@
+{
+  "cases": [
+    {
+      "name": "health route",
+      "method": "GET",
+      "path": "/ether/health",
+      "wantStatus": 200,
+      "wantFields": {
+        "status": "ok",
+        "plugin": "ether.books"
+      }
+    },
+    {
+      "name": "configure clears cache cleanly",
+      "method": "POST",
+      "path": "/ether/configure",
+      "body": {},
+      "wantStatus": 200,
+      "wantFields": {
+        "ok": true
+      }
+    },
+    {
+      "name": "status view renders ViewSpec",
+      "method": "GET",
+      "path": "/ether/view/status",
+      "wantStatus": 200,
+      "wantFields": {
+        "title": "$t:view.status.title"
+      }
+    },
+    {
+      "name": "books changes initial anchor",
+      "method": "POST",
+      "path": "/ether/v1/kinds/books/changes",
+      "body": { "cursor": "", "limit": 100 },
+      "wantStatus": 200,
+      "wantFields": {
+        "complete": true
+      }
+    },
+    {
+      "name": "audiobooks changes initial anchor",
+      "method": "POST",
+      "path": "/ether/v1/kinds/audiobooks/changes",
+      "body": { "cursor": "", "limit": 100 },
+      "wantStatus": 200,
+      "wantFields": {
+        "complete": true
+      }
+    },
+    {
+      "name": "books resolve direct Standard Ebooks EPUB",
+      "method": "POST",
+      "path": "/ether/v1/kinds/books/resolve",
+      "body": {
+        "item": {
+          "id": "se-jane-austen-pride-and-prejudice",
+          "level": "book",
+          "title": "Pride and Prejudice",
+          "playable": true,
+          "fields": { "source": "Standard Ebooks", "format": "EPUB" },
+          "hints": {
+            "kind": "books",
+            "source": "standard-ebooks",
+            "sourceId": "se-jane-austen-pride-and-prejudice",
+            "title": "Pride and Prejudice",
+            "authors": ["Jane Austen"],
+            "directSources": [
+              {
+                "url": "https://standardebooks.org/ebooks/jane-austen/pride-and-prejudice/downloads/jane-austen_pride-and-prejudice.epub",
+                "mime": "application/epub+zip",
+                "format": "epub",
+                "label": "Standard Ebooks EPUB"
+              }
+            ]
+          }
+        }
+      },
+      "wantStatus": 200
+    },
+    {
+      "name": "audiobooks resolve direct LibriVox multi-part MP3 partIndex 1",
+      "method": "POST",
+      "path": "/ether/v1/kinds/audiobooks/resolve",
+      "body": {
+        "partIndex": 1,
+        "item": {
+          "id": "lv-62",
+          "level": "audiobook",
+          "title": "Pride and Prejudice",
+          "playable": true,
+          "fields": { "source": "LibriVox", "format": "MP3" },
+          "hints": {
+            "kind": "audiobooks",
+            "source": "librivox",
+            "sourceId": "lv-62",
+            "title": "Pride and Prejudice",
+            "authors": ["Jane Austen"],
+            "parts": [
+              { "name": "Chapter 1", "mime": "audio/mpeg", "durationSec": 420 },
+              { "name": "Chapter 2", "mime": "audio/mpeg", "durationSec": 380 }
+            ],
+            "partUrls": [
+              "https://archive.org/download/pride_and_prejudice/ch01.mp3",
+              "https://archive.org/download/pride_and_prejudice/ch02.mp3"
+            ]
+          }
+        }
+      },
+      "wantStatus": 200
+    },
+    {
+      "name": "books match ranks exact EPUB over study guide",
+      "method": "POST",
+      "path": "/ether/v1/kinds/books/match",
+      "body": {
+        "item": {
+          "id": "ol-OL893415W",
+          "level": "book",
+          "title": "Dune",
+          "year": 1965,
+          "playable": true,
+          "fields": { "authors": [{ "name": "Frank Herbert", "role": "Author" }] },
+          "hints": {
+            "kind": "books",
+            "source": "openlibrary",
+            "sourceId": "ol-OL893415W",
+            "title": "Dune",
+            "authors": ["Frank Herbert"],
+            "year": 1965
+          }
+        },
+        "candidates": [
+          {
+            "infoHash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+            "title": "Study Guide and Summary of Dune by Frank Herbert EPUB",
+            "size": 120000
+          },
+          {
+            "infoHash": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+            "title": "Frank Herbert - Dune (1965) [Retail EPUB]",
+            "size": 2400000,
+            "cached": true
+          }
+        ]
+      },
+      "wantStatus": 200
+    },
+    {
+      "name": "audiobooks match rejects abridged and favors unabridged M4B",
+      "method": "POST",
+      "path": "/ether/v1/kinds/audiobooks/match",
+      "body": {
+        "item": {
+          "id": "aud-B08G9PRS1K",
+          "level": "audiobook",
+          "title": "Project Hail Mary",
+          "year": 2021,
+          "playable": true,
+          "fields": {
+            "authors": [{ "name": "Andy Weir", "role": "Author" }],
+            "narrators": [{ "name": "Ray Porter", "role": "Narrator" }],
+            "duration": 58200,
+            "unabridged": true
+          },
+          "hints": {
+            "kind": "audiobooks",
+            "source": "audible",
+            "sourceId": "aud-B08G9PRS1K",
+            "title": "Project Hail Mary",
+            "authors": ["Andy Weir"],
+            "narrators": ["Ray Porter"],
+            "asin": "B08G9PRS1K",
+            "durationSec": 58200,
+            "unabridged": true
+          }
+        },
+        "candidates": [
+          {
+            "infoHash": "1111111111111111111111111111111111111111",
+            "title": "Andy Weir - Project Hail Mary (Abridged) MP3",
+            "size": 220000000
+          },
+          {
+            "infoHash": "2222222222222222222222222222222222222222",
+            "title": "Andy Weir - Project Hail Mary [Unabridged] (Narrated by Ray Porter) M4B",
+            "size": 460000000,
+            "cached": true
+          }
+        ]
+      },
+      "wantStatus": 200
+    }
+  ]
+}

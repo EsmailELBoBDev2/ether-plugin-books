@@ -1,0 +1,117 @@
+{
+  "fields": [
+    {
+      "key": "catalogs",
+      "kind": "group",
+      "label": "$t:settings.group.catalogs",
+      "fields": [
+        {
+          "key": "hardcover_token",
+          "kind": "secret",
+          "label": "$t:settings.hardcover_token.label",
+          "hint": "$t:settings.hardcover_token.help"
+        },
+        {
+          "key": "enable_openlibrary",
+          "kind": "bool",
+          "label": "$t:settings.enable_openlibrary.label",
+          "hint": "$t:settings.enable_openlibrary.help",
+          "default": true
+        },
+        {
+          "key": "enable_audible_metadata",
+          "kind": "bool",
+          "label": "$t:settings.enable_audible_metadata.label",
+          "hint": "$t:settings.enable_audible_metadata.help",
+          "default": true
+        },
+        {
+          "key": "enable_standard_ebooks",
+          "kind": "bool",
+          "label": "$t:settings.enable_standard_ebooks.label",
+          "hint": "$t:settings.enable_standard_ebooks.help",
+          "default": true
+        },
+        {
+          "key": "enable_librivox",
+          "kind": "bool",
+          "label": "$t:settings.enable_librivox.label",
+          "hint": "$t:settings.enable_librivox.help",
+          "default": true
+        },
+        {
+          "key": "enable_gutenberg",
+          "kind": "bool",
+          "label": "$t:settings.enable_gutenberg.label",
+          "hint": "$t:settings.enable_gutenberg.help",
+          "default": false
+        },
+        {
+          "key": "language",
+          "kind": "select",
+          "label": "$t:settings.language.label",
+          "hint": "$t:settings.language.help",
+          "default": "en",
+          "options": [
+            { "value": "en", "label": "$t:settings.language.en" },
+            { "value": "any", "label": "$t:settings.language.any" }
+          ]
+        },
+        {
+          "key": "catalog_size",
+          "kind": "select",
+          "label": "$t:settings.catalog_size.label",
+          "hint": "$t:settings.catalog_size.help",
+          "default": "standard",
+          "options": [
+            { "value": "compact", "label": "$t:settings.catalog_size.compact" },
+            { "value": "standard", "label": "$t:settings.catalog_size.standard" },
+            { "value": "large", "label": "$t:settings.catalog_size.large" }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "resolution",
+      "kind": "group",
+      "label": "$t:settings.group.resolution",
+      "fields": [
+        {
+          "key": "ebook_categories",
+          "kind": "text",
+          "label": "$t:settings.ebook_categories.label",
+          "hint": "$t:settings.ebook_categories.help",
+          "default": "7000,7020"
+        },
+        {
+          "key": "audiobook_categories",
+          "kind": "text",
+          "label": "$t:settings.audiobook_categories.label",
+          "hint": "$t:settings.audiobook_categories.help",
+          "default": "3030"
+        },
+        {
+          "key": "prefer_unabridged",
+          "kind": "bool",
+          "label": "$t:settings.prefer_unabridged.label",
+          "hint": "$t:settings.prefer_unabridged.help",
+          "default": true
+        },
+        {
+          "key": "prefer_cached",
+          "kind": "bool",
+          "label": "$t:settings.prefer_cached.label",
+          "hint": "$t:settings.prefer_cached.help",
+          "default": true
+        },
+        {
+          "key": "contact_email",
+          "kind": "text",
+          "label": "$t:settings.contact_email.label",
+          "hint": "$t:settings.contact_email.help",
+          "default": ""
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,677 @@
+{
+  "id": "ether.books",
+  "version": "1.0.6",
+  "name": "Books and audiobooks",
+  "description": "Adds Books and Audiobooks libraries powered by Open Library, Hardcover, Audible catalog metadata, Standard Ebooks and LibriVox, with free public-domain reading and listening plus release matching through configured sources.",
+  "ether": {
+    "protocol": 1,
+    "kind": "content",
+    "summary": "$t:plugin.summary",
+    "author": { "name": "Ether" },
+    "license": "MIT",
+    "capabilities": ["catalog_provider", "kind_resolver", "matcher", "ui"],
+    "permissions": {
+      "network": [
+        "api.hardcover.app",
+        "assets.hardcover.app",
+        "openlibrary.org",
+        "covers.openlibrary.org",
+        "api.audible.com",
+        "m.media-amazon.com",
+        "standardebooks.org",
+        "librivox.org",
+        "archive.org",
+        "*.archive.org",
+        "gutendex.com",
+        "www.gutenberg.org"
+      ],
+      "sources": "search",
+      "secrets": ["hardcover_token"]
+    },
+    "runtime": {
+      "kind": "hosted",
+      "entry": "src/plugin.ts",
+      "limits": {
+        "poolSize": 4,
+        "memoryBytes": 134217728
+      }
+    },
+    "strings": {
+      "en": "i18n/en.json"
+    },
+    "settings": {
+      "$ref": "settings.schema.json"
+    },
+    "contributes": {
+      "pages": [
+        {
+          "key": "status",
+          "label": "$t:page.status.label",
+          "route": "/ether/view/status"
+        }
+      ],
+      "mediaKinds": [
+        {
+          "key": "books",
+          "label": "$t:kind.books.label",
+          "media": "book",
+          "library": {
+            "name": "$t:kind.books.library",
+            "icon": "assets/icon.svg",
+            "card": "poster",
+            "dateDisplay": "year",
+            "tabs": [
+              {
+                "key": "home",
+                "label": "$t:tab.home",
+                "kind": "recommended"
+              },
+              {
+                "key": "browse",
+                "label": "$t:tab.browse",
+                "kind": "library"
+              },
+              {
+                "key": "authors",
+                "label": "$t:tab.authors",
+                "kind": "people",
+                "facet": "authors",
+                "order": "count",
+                "searchPlaceholder": "$t:search.authors"
+              },
+              {
+                "key": "series",
+                "label": "$t:tab.series",
+                "kind": "collections",
+                "facet": "series",
+                "order": "count",
+                "sort": "index",
+                "direction": "asc",
+                "searchPlaceholder": "$t:search.series"
+              },
+              {
+                "key": "genres",
+                "label": "$t:tab.genres",
+                "kind": "collections",
+                "facet": "genres",
+                "order": "count",
+                "sort": "rating",
+                "direction": "desc",
+                "searchPlaceholder": "$t:search.genres"
+              },
+              {
+                "key": "awards",
+                "label": "$t:tab.awards",
+                "kind": "collections",
+                "facet": "awards",
+                "order": "count",
+                "sort": "released",
+                "direction": "desc",
+                "searchPlaceholder": "$t:search.awards"
+              },
+              {
+                "key": "classics",
+                "label": "$t:tab.free_classics",
+                "kind": "view",
+                "layout": "grid",
+                "sort": "rating",
+                "direction": "desc",
+                "searchPlaceholder": "$t:search.classics",
+                "filters": {
+                  "match": "any",
+                  "rules": [
+                    {
+                      "field": "browse:source",
+                      "op": "is",
+                      "value": "Standard Ebooks"
+                    },
+                    {
+                      "field": "browse:source",
+                      "op": "is",
+                      "value": "Project Gutenberg"
+                    }
+                  ]
+                }
+              },
+              {
+                "key": "history",
+                "label": "$t:tab.history",
+                "kind": "view",
+                "layout": "timeline",
+                "sort": "lastViewed",
+                "direction": "desc",
+                "searchPlaceholder": "$t:search.reading_history",
+                "filters": {
+                  "match": "all",
+                  "rules": [
+                    {
+                      "field": "viewer",
+                      "op": "is",
+                      "value": { "history": true }
+                    }
+                  ]
+                }
+              },
+              {
+                "key": "to-read",
+                "label": "$t:tab.to_read",
+                "kind": "view",
+                "layout": "grid",
+                "sort": "added",
+                "direction": "desc",
+                "searchPlaceholder": "$t:search.to_read",
+                "filters": {
+                  "match": "all",
+                  "rules": [
+                    {
+                      "field": "viewer",
+                      "op": "is",
+                      "value": { "watchlist": true }
+                    }
+                  ]
+                }
+              }
+            ],
+            "shelves": [
+              {
+                "key": "popular-week",
+                "label": "$t:shelf.popular_week",
+                "facet": "curated",
+                "value": "Popular this week",
+                "sort": "rating",
+                "direction": "desc"
+              },
+              {
+                "key": "new-notable",
+                "label": "$t:shelf.new_notable",
+                "facet": "curated",
+                "value": "New and notable",
+                "sort": "released",
+                "direction": "desc"
+              },
+              {
+                "key": "award-winners",
+                "label": "$t:shelf.award_winners",
+                "facet": "curated",
+                "value": "Award winners",
+                "sort": "rating",
+                "direction": "desc"
+              },
+              {
+                "key": "series-start",
+                "label": "$t:shelf.series_start",
+                "facet": "curated",
+                "value": "Series to start",
+                "sort": "rating",
+                "direction": "desc"
+              },
+              {
+                "key": "free-classics",
+                "label": "$t:shelf.free_classics",
+                "facet": "source",
+                "values": ["Standard Ebooks", "Project Gutenberg"],
+                "sort": "rating",
+                "direction": "desc"
+              },
+              {
+                "key": "science-fiction",
+                "label": "$t:shelf.science_fiction",
+                "facet": "genres",
+                "value": "Science fiction",
+                "sort": "rating",
+                "direction": "desc"
+              },
+              {
+                "key": "fantasy",
+                "label": "$t:shelf.fantasy",
+                "facet": "genres",
+                "value": "Fantasy",
+                "sort": "rating",
+                "direction": "desc"
+              },
+              {
+                "key": "mystery-thriller",
+                "label": "$t:shelf.mystery_thriller",
+                "facet": "genres",
+                "value": "Mystery and thriller",
+                "sort": "rating",
+                "direction": "desc"
+              },
+              {
+                "key": "literary-fiction",
+                "label": "$t:shelf.literary_fiction",
+                "facet": "genres",
+                "value": "Literary fiction",
+                "sort": "rating",
+                "direction": "desc"
+              },
+              {
+                "key": "non-fiction",
+                "label": "$t:shelf.non_fiction",
+                "facet": "genres",
+                "value": "Non-fiction",
+                "sort": "rating",
+                "direction": "desc"
+              },
+              {
+                "key": "history-genre",
+                "label": "$t:shelf.history",
+                "facet": "genres",
+                "value": "History",
+                "sort": "rating",
+                "direction": "desc"
+              },
+              {
+                "key": "biography-memoir",
+                "label": "$t:shelf.biography_memoir",
+                "facet": "genres",
+                "value": "Biography and memoir",
+                "sort": "rating",
+                "direction": "desc"
+              },
+              {
+                "key": "horror",
+                "label": "$t:shelf.horror",
+                "facet": "genres",
+                "value": "Horror",
+                "sort": "rating",
+                "direction": "desc"
+              },
+              {
+                "key": "top-rated",
+                "label": "$t:shelf.top_rated",
+                "sort": "rating",
+                "direction": "desc"
+              }
+            ]
+          },
+          "levels": [
+            {
+              "key": "book",
+              "label": "$t:level.book",
+              "role": "book",
+              "playable": true
+            }
+          ],
+          "fields": [
+            { "key": "authors", "type": "people", "label": "$t:field.authors", "indexed": true },
+            { "key": "series", "type": "string", "label": "$t:field.series", "indexed": true },
+            { "key": "series_number", "type": "string", "label": "$t:field.series_number" },
+            { "key": "genres", "type": "strings", "label": "$t:field.genres", "indexed": true },
+            { "key": "awards", "type": "strings", "label": "$t:field.awards", "indexed": true },
+            { "key": "curated", "type": "strings", "label": "$t:field.curated", "indexed": true, "fact": false },
+            {
+              "key": "format",
+              "type": "enum",
+              "label": "$t:field.format",
+              "indexed": true,
+              "enum": ["EPUB", "PDF", "CBZ"]
+            },
+            {
+              "key": "source",
+              "type": "enum",
+              "label": "$t:field.source",
+              "indexed": true,
+              "enum": ["Hardcover", "Open Library", "Standard Ebooks", "Project Gutenberg"]
+            },
+            { "key": "publisher", "type": "string", "label": "$t:field.publisher" },
+            { "key": "isbn", "type": "string", "label": "$t:field.isbn", "indexed": true },
+            { "key": "pages", "type": "int", "label": "$t:field.pages", "indexed": true },
+            { "key": "language", "type": "string", "label": "$t:field.language", "indexed": true },
+            { "key": "release_date", "type": "string", "label": "$t:field.release_date" }
+          ],
+          "browse": {
+            "sorts": ["title", "added", "released", "year", "rating", "index"],
+            "facets": [
+              "authors",
+              "series",
+              "genres",
+              "awards",
+              "curated",
+              "format",
+              "source",
+              "language",
+              "year",
+              "rating"
+            ],
+            "search": true,
+            "searchFields": ["authors", "series", "genres", "awards", "publisher", "isbn"],
+            "liveSearch": true,
+            "expand": {
+              "facets": ["authors", "series", "genres"],
+              "ttlHours": 168
+            }
+          },
+          "present": {
+            "vela": { "type": "movies" },
+            "mediaBrowser": {
+              "collectionType": "books",
+              "itemTypes": { "book": "Book" }
+            }
+          },
+          "sync": {
+            "mode": "pull",
+            "refresh": "6h"
+          },
+          "match": {
+            "thresholdDefault": 0.65
+          }
+        },
+        {
+          "key": "audiobooks",
+          "label": "$t:kind.audiobooks.label",
+          "media": "audiobook",
+          "library": {
+            "name": "$t:kind.audiobooks.library",
+            "icon": "assets/icon.svg",
+            "card": "square",
+            "dateDisplay": "year",
+            "tabs": [
+              {
+                "key": "home",
+                "label": "$t:tab.home",
+                "kind": "recommended"
+              },
+              {
+                "key": "browse",
+                "label": "$t:tab.browse",
+                "kind": "library"
+              },
+              {
+                "key": "narrators",
+                "label": "$t:tab.narrators",
+                "kind": "people",
+                "facet": "narrators",
+                "order": "count",
+                "searchPlaceholder": "$t:search.narrators"
+              },
+              {
+                "key": "authors",
+                "label": "$t:tab.authors",
+                "kind": "people",
+                "facet": "authors",
+                "order": "count",
+                "searchPlaceholder": "$t:search.authors"
+              },
+              {
+                "key": "series",
+                "label": "$t:tab.series",
+                "kind": "collections",
+                "facet": "series",
+                "order": "count",
+                "sort": "index",
+                "direction": "asc",
+                "searchPlaceholder": "$t:search.series"
+              },
+              {
+                "key": "genres",
+                "label": "$t:tab.genres",
+                "kind": "collections",
+                "facet": "genres",
+                "order": "count",
+                "sort": "rating",
+                "direction": "desc",
+                "searchPlaceholder": "$t:search.genres"
+              },
+              {
+                "key": "by-length",
+                "label": "$t:tab.by_length",
+                "kind": "collections",
+                "facet": "length",
+                "order": "name",
+                "sort": "rating",
+                "direction": "desc",
+                "searchPlaceholder": "$t:search.length"
+              },
+              {
+                "key": "classics",
+                "label": "$t:tab.free_classics",
+                "kind": "view",
+                "layout": "grid",
+                "sort": "rating",
+                "direction": "desc",
+                "searchPlaceholder": "$t:search.free_audiobooks",
+                "filters": {
+                  "match": "all",
+                  "rules": [
+                    {
+                      "field": "browse:source",
+                      "op": "is",
+                      "value": "LibriVox"
+                    }
+                  ]
+                }
+              },
+              {
+                "key": "history",
+                "label": "$t:tab.history",
+                "kind": "view",
+                "layout": "timeline",
+                "sort": "lastViewed",
+                "direction": "desc",
+                "searchPlaceholder": "$t:search.listening_history",
+                "filters": {
+                  "match": "all",
+                  "rules": [
+                    {
+                      "field": "viewer",
+                      "op": "is",
+                      "value": { "history": true }
+                    }
+                  ]
+                }
+              },
+              {
+                "key": "to-listen",
+                "label": "$t:tab.to_listen",
+                "kind": "view",
+                "layout": "grid",
+                "sort": "added",
+                "direction": "desc",
+                "searchPlaceholder": "$t:search.to_listen",
+                "filters": {
+                  "match": "all",
+                  "rules": [
+                    {
+                      "field": "viewer",
+                      "op": "is",
+                      "value": { "watchlist": true }
+                    }
+                  ]
+                }
+              }
+            ],
+            "shelves": [
+              {
+                "key": "popular-week",
+                "label": "$t:shelf.popular_week",
+                "facet": "curated",
+                "value": "Popular this week",
+                "sort": "rating",
+                "direction": "desc"
+              },
+              {
+                "key": "new-notable",
+                "label": "$t:shelf.new_notable",
+                "facet": "curated",
+                "value": "New and notable",
+                "sort": "released",
+                "direction": "desc"
+              },
+              {
+                "key": "award-winners",
+                "label": "$t:shelf.award_winners",
+                "facet": "curated",
+                "value": "Award winners",
+                "sort": "rating",
+                "direction": "desc"
+              },
+              {
+                "key": "series-start",
+                "label": "$t:shelf.series_start",
+                "facet": "curated",
+                "value": "Series to start",
+                "sort": "rating",
+                "direction": "desc"
+              },
+              {
+                "key": "quick-listens",
+                "label": "$t:shelf.quick_listens",
+                "facet": "length",
+                "value": "Under 6 hours",
+                "sort": "rating",
+                "direction": "desc"
+              },
+              {
+                "key": "epic-listens",
+                "label": "$t:shelf.epic_listens",
+                "facet": "length",
+                "value": "Over 20 hours",
+                "sort": "rating",
+                "direction": "desc"
+              },
+              {
+                "key": "free-classics",
+                "label": "$t:shelf.free_classics",
+                "facet": "source",
+                "value": "LibriVox",
+                "sort": "rating",
+                "direction": "desc"
+              },
+              {
+                "key": "science-fiction",
+                "label": "$t:shelf.science_fiction",
+                "facet": "genres",
+                "value": "Science fiction",
+                "sort": "rating",
+                "direction": "desc"
+              },
+              {
+                "key": "fantasy",
+                "label": "$t:shelf.fantasy",
+                "facet": "genres",
+                "value": "Fantasy",
+                "sort": "rating",
+                "direction": "desc"
+              },
+              {
+                "key": "mystery-thriller",
+                "label": "$t:shelf.mystery_thriller",
+                "facet": "genres",
+                "value": "Mystery and thriller",
+                "sort": "rating",
+                "direction": "desc"
+              },
+              {
+                "key": "non-fiction",
+                "label": "$t:shelf.non_fiction",
+                "facet": "genres",
+                "value": "Non-fiction",
+                "sort": "rating",
+                "direction": "desc"
+              },
+              {
+                "key": "biography-memoir",
+                "label": "$t:shelf.biography_memoir",
+                "facet": "genres",
+                "value": "Biography and memoir",
+                "sort": "rating",
+                "direction": "desc"
+              },
+              {
+                "key": "top-rated",
+                "label": "$t:shelf.top_rated",
+                "sort": "rating",
+                "direction": "desc"
+              }
+            ]
+          },
+          "levels": [
+            {
+              "key": "audiobook",
+              "label": "$t:level.audiobook",
+              "role": "audiobook",
+              "playable": true
+            }
+          ],
+          "fields": [
+            { "key": "authors", "type": "people", "label": "$t:field.authors", "indexed": true },
+            { "key": "narrators", "type": "people", "label": "$t:field.narrators", "indexed": true },
+            { "key": "series", "type": "string", "label": "$t:field.series", "indexed": true },
+            { "key": "series_number", "type": "string", "label": "$t:field.series_number" },
+            { "key": "genres", "type": "strings", "label": "$t:field.genres", "indexed": true },
+            { "key": "awards", "type": "strings", "label": "$t:field.awards", "indexed": true },
+            { "key": "curated", "type": "strings", "label": "$t:field.curated", "indexed": true, "fact": false },
+            { "key": "duration", "type": "duration", "label": "$t:field.duration", "indexed": true },
+            {
+              "key": "length",
+              "type": "enum",
+              "label": "$t:field.length",
+              "indexed": true,
+              "enum": ["Under 6 hours", "6 to 12 hours", "12 to 20 hours", "Over 20 hours"]
+            },
+            { "key": "unabridged", "type": "bool", "label": "$t:field.unabridged", "indexed": true },
+            {
+              "key": "format",
+              "type": "enum",
+              "label": "$t:field.format",
+              "indexed": true,
+              "enum": ["M4B", "MP3"]
+            },
+            {
+              "key": "source",
+              "type": "enum",
+              "label": "$t:field.source",
+              "indexed": true,
+              "enum": ["Hardcover", "Audible", "LibriVox", "Open Library"]
+            },
+            { "key": "publisher", "type": "string", "label": "$t:field.publisher" },
+            { "key": "asin", "type": "string", "label": "$t:field.asin", "indexed": true },
+            { "key": "isbn", "type": "string", "label": "$t:field.isbn", "indexed": true },
+            { "key": "language", "type": "string", "label": "$t:field.language", "indexed": true },
+            { "key": "release_date", "type": "string", "label": "$t:field.release_date" }
+          ],
+          "browse": {
+            "sorts": ["title", "added", "released", "year", "rating", "index"],
+            "facets": [
+              "authors",
+              "narrators",
+              "series",
+              "genres",
+              "awards",
+              "curated",
+              "length",
+              "unabridged",
+              "format",
+              "source",
+              "language",
+              "year",
+              "rating"
+            ],
+            "search": true,
+            "searchFields": ["authors", "narrators", "series", "genres", "awards", "publisher", "asin", "isbn"],
+            "liveSearch": true,
+            "expand": {
+              "facets": ["authors", "narrators", "series", "genres"],
+              "ttlHours": 168
+            }
+          },
+          "present": {
+            "vela": { "type": "movies" },
+            "mediaBrowser": {
+              "collectionType": "audiobooks",
+              "itemTypes": { "audiobook": "AudioBook" }
+            }
+          },
+          "sync": {
+            "mode": "pull",
+            "refresh": "6h"
+          },
+          "match": {
+            "thresholdDefault": 0.65
+          }
+        }
+      ]
+    }
+  }
+}
