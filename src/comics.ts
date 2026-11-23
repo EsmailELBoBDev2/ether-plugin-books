@@ -549,7 +549,7 @@ export function comicsQueries(item: any): any {
       .replace(/[:"'?!()#]/g, " ")
       .replace(/\s+/g, " ")
       .trim();
-    if (s && !out.some((x: any) => x.toLowerCase() === s.toLowerCase()) && out.length < 3)
+    if (s && !out.some((x: any) => x.toLowerCase() === s.toLowerCase()) && out.length < 4)
       out.push(s);
   };
   if (h.ctype === "comic") {
@@ -559,6 +559,8 @@ export function comicsQueries(item: any): any {
   }
   if (h.volumes > 0) {
     add(`${h.series} v${String(h.volume).padStart(2, "0")}`);
+    // Publisher releases are named "Kodansha - Series 13 (2021)".
+    add(`${h.series} ${h.volume}`);
     // VIZ and other official releases are named "Series Vol.05".
     add(`${h.series} Vol ${String(h.volume).padStart(2, "0")}`);
   }
@@ -569,9 +571,13 @@ export function comicsQueries(item: any): any {
   return out;
 }
 // comicsMatch returns "" when releaseName is this volume or issue, otherwise why not.
+// Publishers that lead official digital release names ("Kodansha - ...").
+const COMICS_PUBLISHER_PREFIX =
+  /^ (kodansha( comics| usa)?|yen press|viz( media)?|seven seas( entertainment)?|dark horse( comics| manga)?|square enix( manga)?|vertical( comics)?|tokyopop|j novel club|ghost ship|udon( entertainment)?|denpa|one peace( books)?|titan( comics| manga)?|marvel( comics)?|dc( comics)?|image( comics)?|boom( studios)?|idw( publishing)?|webtoon|tappytoon|manta|tapas|ize press|azuki|inky pen|kodansha comics) /;
+
 export function comicsMatch(item: any, releaseName: any): any {
   const h = item.hints || {};
-  const name =
+  let name =
     " " +
     comicsWords(
       String(releaseName || "")
@@ -580,6 +586,10 @@ export function comicsMatch(item: any, releaseName: any): any {
     ) +
     " ";
   if (!name.trim()) return "empty release title";
+  // Official digital releases often lead with the publisher:
+  // "Kodansha - Attack on Titan 13 (2021)". Only known publishers are skipped,
+  // so another series in front still fails the series-first rule below.
+  name = name.replace(COMICS_PUBLISHER_PREFIX, " ");
   let rest = "";
   let found = false;
   for (const t of [h.series, ...(h.aliases || [])]) {

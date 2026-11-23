@@ -2062,6 +2062,9 @@ describe("Comics & Manga: series cards with volumes inside, strict volume matchi
       ["Attack on Titan v03 (Digital).cbz", "different volume (3)"],
       ["Attack on Titan c008 (Digital)", "chapter release, not a volume"],
       ["Spoof Attack on Titan v02 (Digital)", "series title does not match"],
+      ["Kodansha.-.Attack.On.Titan.02.2021.Hybrid.Comic.eBook-BitBook", ""],
+      ["Kodansha.-.Attack.On.Titan.Before.The.Fall.02.2021.Hybrid.Comic.eBook-BitBook", "volume number missing"],
+      ["Kodansha.-.Attack.On.Titan.03.2021.Hybrid.Comic.eBook-BitBook", "different volume (3)"],
     ];
     for (const [name, why] of cases) {
       assert.equal(comicsMatch(v2, name), why, name);
